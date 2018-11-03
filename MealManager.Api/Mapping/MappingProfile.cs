@@ -18,9 +18,13 @@ namespace MealManager.Api.Mapping
             CreateMap<Department, DepartmentModel>();
             CreateMap<DepartmentMealProfiling, DepartmentMealProfilingModel>();
             CreateMap<MealTransaction, MealTransactionModel>();
+            CreateMap<UserMealProfiling, UserMealProfilingModel>();
 
-            // CreateMap<AccountUpdateResource, ApplicationUser>();
-            // CreateMap<ClientUserModel, ClientUser>();
+            CreateMap<MenuSaveModel, Menu>();
+            CreateMap<UserMealProfilingSaveModel, UserMealProfiling>();
+            CreateMap<DepartmentMealProfilingSaveModel, DepartmentMealProfiling>();
+            CreateMap<MealTransactionSaveModel, MealTransaction>();
+            
         }
     }
 }

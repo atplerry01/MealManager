@@ -12,6 +12,10 @@ namespace MealManager.Api.Models.Transact
         }
 
         public int Id { get; set; }
+        public string ApplicationUserId { get; set; }
+        public int MenuId { get; set; }
+        public int UserMealProfileId { get; set; }
+
         public virtual ApplicationUser User { get; set; }
         public virtual Menu Menu { get; set; }
         public virtual UserMealProfiling UserMealProfiling { get; set; }

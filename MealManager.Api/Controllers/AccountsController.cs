@@ -112,6 +112,30 @@ namespace MealManager.Api.Controllers
             return mapper.Map<IEnumerable<UserMealProfiling>, IEnumerable<UserMealProfilingModel>>(entity);
         }
 
+        [HttpPost("user/profiling")]
+        public async Task<IActionResult> CreateUserMealProfile([FromBody] UserMealProfilingSaveModel model)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            UserMealProfiling newProfile = await context.UserMealProfilings.FirstOrDefaultAsync(u => u.UserId == model.UserId);
+
+            if (newProfile != null) {
+                return StatusCode(400, "Profiling already exist");
+            }
+
+            var entity = mapper.Map<UserMealProfilingSaveModel, UserMealProfiling>(model);
+            context.UserMealProfilings.Add(entity);
+            await context.SaveChangesAsync();
+
+            entity = await context.UserMealProfilings
+                .Include(u => u.User)
+                .Include(d => d.DepartmentMealProfiling)
+                .SingleOrDefaultAsync(it => it.Id == entity.Id);
+
+            var result = mapper.Map<UserMealProfiling, UserMealProfilingModel>(entity);
+            return Ok(result);
+        }
+
 
 
 

@@ -6,8 +6,10 @@ namespace MealManager.Api.Models.Transact
     public class DepartmentMealProfiling
     {
         public int Id { get; set; }
-        public Department Department { get; set; }
-        public MealAssignment MealAssignment { get; set; }
+        public int DepartmentId { get; set; }
+        public int MealAssignmentId { get; set; }
+        public virtual Department Department { get; set; }
+        public virtual MealAssignment MealAssignment { get; set; }
         
     }
 }

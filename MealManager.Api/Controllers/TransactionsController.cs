@@ -106,12 +106,31 @@ namespace MealManager.Api.Controllers
         
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CreateMealTransaction([FromBody] UserMealProfilingSaveModel model)
+        {
+            if (!ModelState.IsValid) return BadRequest();
 
-        // All MealTransaction
-        // Today Transaction
-        // This Month Transaction
-        // Last Month Transaction
-        // DateRange Transaction
+            UserMealProfiling newProfile = await context.UserMealProfilings.FirstOrDefaultAsync(u => u.UserId == model.UserId);
+
+            if (newProfile != null) {
+                return StatusCode(400, "Profiling already exist");
+            }
+
+            var entity = mapper.Map<UserMealProfilingSaveModel, UserMealProfiling>(model);
+            context.UserMealProfilings.Add(entity);
+            await context.SaveChangesAsync();
+
+            entity = await context.UserMealProfilings
+                .Include(u => u.User)
+                .Include(d => d.DepartmentMealProfiling)
+                .SingleOrDefaultAsync(it => it.Id == entity.Id);
+
+            var result = mapper.Map<UserMealProfiling, UserMealProfilingModel>(entity);
+            return Ok(result);
+        }
+
+
 
     }
 }

@@ -30,6 +30,29 @@ namespace MealManager.Api.Controllers
             return mapper.Map<IEnumerable<Menu>, IEnumerable<MenuModel>>(results);
         }
 
+        [HttpPost("Menus")]
+        public async Task<IActionResult> CreateNebu([FromBody] MenuSaveModel model)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            Menu newProfile = await context.Menus.FirstOrDefaultAsync(u => u.Name == model.Name);
+
+            if (newProfile != null) {
+                return StatusCode(400, "Menu Already Exist");
+            }
+
+            var entity = mapper.Map<MenuSaveModel, Menu>(model);
+            context.Menus.Add(entity);
+            await context.SaveChangesAsync();
+
+            entity = await context.Menus.SingleOrDefaultAsync(it => it.Id == entity.Id);
+            var result = mapper.Map<Menu, MenuModel>(entity);
+
+            return Ok(result);
+        }
+
+
+
         [HttpGet("department/profiling")]
         public async Task<IEnumerable<DepartmentMealProfilingModel>> GetDepartmentProfilings()
         {
@@ -41,6 +64,29 @@ namespace MealManager.Api.Controllers
             return mapper.Map<IEnumerable<DepartmentMealProfiling>, IEnumerable<DepartmentMealProfilingModel>>(entity);
         }
 
+        [HttpPost("department/profiling")]
+        public async Task<IActionResult> CreateDepartmentProfile([FromBody] DepartmentMealProfilingSaveModel model)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            DepartmentMealProfiling newProfile = await context.DepartmentMealProfilings.FirstOrDefaultAsync(u => u.DepartmentId == model.DepartmentId);
+
+            if (newProfile != null) {
+                return StatusCode(400, "Profiling already exist");
+            }
+
+            var entity = mapper.Map<DepartmentMealProfilingSaveModel, DepartmentMealProfiling>(model);
+            context.DepartmentMealProfilings.Add(entity);
+            await context.SaveChangesAsync();
+
+            entity = await context.DepartmentMealProfilings
+                .Include(u => u.Department)
+                .Include(d => d.MealAssignment)
+                .SingleOrDefaultAsync(it => it.Id == entity.Id);
+
+            var result = mapper.Map<DepartmentMealProfiling, DepartmentMealProfilingModel>(entity);
+            return Ok(result);
+        }
 
     }
 }
