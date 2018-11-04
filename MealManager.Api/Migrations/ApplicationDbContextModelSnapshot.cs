@@ -242,21 +242,19 @@ namespace MealManager.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("ApplicationUserId");
-
                     b.Property<DateTime>("CreatedOn");
 
                     b.Property<int>("MenuId");
 
-                    b.Property<int>("UserMealProfileId");
+                    b.Property<string>("UserId");
 
-                    b.Property<int?>("UserMealProfilingId");
+                    b.Property<int>("UserMealProfilingId");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ApplicationUserId");
-
                     b.HasIndex("MenuId");
+
+                    b.HasIndex("UserId");
 
                     b.HasIndex("UserMealProfilingId");
 
@@ -422,18 +420,19 @@ namespace MealManager.Api.Migrations
 
             modelBuilder.Entity("MealManager.Api.Models.Transact.MealTransaction", b =>
                 {
-                    b.HasOne("MealManager.Api.Models.Account.ApplicationUser", "User")
-                        .WithMany()
-                        .HasForeignKey("ApplicationUserId");
-
                     b.HasOne("MealManager.Api.Models.Lookup.Menu", "Menu")
                         .WithMany()
                         .HasForeignKey("MenuId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("MealManager.Api.Models.Account.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
                     b.HasOne("MealManager.Api.Models.Transact.UserMealProfiling", "UserMealProfiling")
                         .WithMany()
-                        .HasForeignKey("UserMealProfilingId");
+                        .HasForeignKey("UserMealProfilingId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("MealManager.Api.Models.Transact.UserMealProfiling", b =>

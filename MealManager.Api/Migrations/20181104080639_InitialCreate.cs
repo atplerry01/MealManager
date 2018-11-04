@@ -82,17 +82,45 @@ namespace MealManager.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SidClient",
+                name: "Department",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(nullable: true),
-                    ShortCode = table.Column<string>(nullable: true)
+                    JobFunction = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SidClient", x => x.Id);
+                    table.PrimaryKey("PK_Department", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MealAssignment",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    MealEntitled = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MealAssignment", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Menu",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(nullable: true),
+                    Price = table.Column<double>(nullable: true),
+                    Description = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Menu", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -247,6 +275,92 @@ namespace MealManager.Api.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "DepartmentMealProfiling",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    DepartmentId = table.Column<int>(nullable: false),
+                    MealAssignmentId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DepartmentMealProfiling", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DepartmentMealProfiling_Department_DepartmentId",
+                        column: x => x.DepartmentId,
+                        principalTable: "Department",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_DepartmentMealProfiling_MealAssignment_MealAssignmentId",
+                        column: x => x.MealAssignmentId,
+                        principalTable: "MealAssignment",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserMealProfiling",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    UserId = table.Column<string>(nullable: true),
+                    DepartmentMealProfilingId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserMealProfiling", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserMealProfiling_DepartmentMealProfiling_DepartmentMealProfilingId",
+                        column: x => x.DepartmentMealProfilingId,
+                        principalTable: "DepartmentMealProfiling",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserMealProfiling_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MealTransaction",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    UserId = table.Column<string>(nullable: true),
+                    MenuId = table.Column<int>(nullable: false),
+                    UserMealProfilingId = table.Column<int>(nullable: false),
+                    CreatedOn = table.Column<DateTime>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MealTransaction", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MealTransaction_Menu_MenuId",
+                        column: x => x.MenuId,
+                        principalTable: "Menu",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MealTransaction_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_MealTransaction_UserMealProfiling_UserMealProfilingId",
+                        column: x => x.UserMealProfilingId,
+                        principalTable: "UserMealProfiling",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -290,6 +404,41 @@ namespace MealManager.Api.Migrations
                 name: "IX_ClientUser_UserId",
                 table: "ClientUser",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DepartmentMealProfiling_DepartmentId",
+                table: "DepartmentMealProfiling",
+                column: "DepartmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DepartmentMealProfiling_MealAssignmentId",
+                table: "DepartmentMealProfiling",
+                column: "MealAssignmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MealTransaction_MenuId",
+                table: "MealTransaction",
+                column: "MenuId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MealTransaction_UserId",
+                table: "MealTransaction",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MealTransaction_UserMealProfilingId",
+                table: "MealTransaction",
+                column: "UserMealProfilingId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserMealProfiling_DepartmentMealProfilingId",
+                table: "UserMealProfiling",
+                column: "DepartmentMealProfilingId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserMealProfiling_UserId",
+                table: "UserMealProfiling",
+                column: "UserId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -319,16 +468,31 @@ namespace MealManager.Api.Migrations
                 name: "ClientUser");
 
             migrationBuilder.DropTable(
-                name: "RefreshToken");
+                name: "MealTransaction");
 
             migrationBuilder.DropTable(
-                name: "SidClient");
+                name: "RefreshToken");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
+                name: "Menu");
+
+            migrationBuilder.DropTable(
+                name: "UserMealProfiling");
+
+            migrationBuilder.DropTable(
+                name: "DepartmentMealProfiling");
+
+            migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Department");
+
+            migrationBuilder.DropTable(
+                name: "MealAssignment");
         }
     }
 }

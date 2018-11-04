@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MealManager.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20181027173959_InitialCreate")]
+    [Migration("20181104080639_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -174,19 +174,112 @@ namespace MealManager.Api.Migrations
                     b.ToTable("RefreshToken");
                 });
 
-            modelBuilder.Entity("MealManager.Api.Models.Account.SidClient", b =>
+            modelBuilder.Entity("MealManager.Api.Models.Lookup.Department", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Name");
+                    b.Property<string>("JobFunction");
 
-                    b.Property<string>("ShortCode");
+                    b.Property<string>("Name");
 
                     b.HasKey("Id");
 
-                    b.ToTable("SidClient");
+                    b.ToTable("Department");
+                });
+
+            modelBuilder.Entity("MealManager.Api.Models.Lookup.MealAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("MealEntitled");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MealAssignment");
+                });
+
+            modelBuilder.Entity("MealManager.Api.Models.Lookup.Menu", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Description");
+
+                    b.Property<string>("Name");
+
+                    b.Property<double?>("Price");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Menu");
+                });
+
+            modelBuilder.Entity("MealManager.Api.Models.Transact.DepartmentMealProfiling", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("DepartmentId");
+
+                    b.Property<int>("MealAssignmentId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.HasIndex("MealAssignmentId");
+
+                    b.ToTable("DepartmentMealProfiling");
+                });
+
+            modelBuilder.Entity("MealManager.Api.Models.Transact.MealTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreatedOn");
+
+                    b.Property<int>("MenuId");
+
+                    b.Property<string>("UserId");
+
+                    b.Property<int>("UserMealProfilingId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MenuId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserMealProfilingId");
+
+                    b.ToTable("MealTransaction");
+                });
+
+            modelBuilder.Entity("MealManager.Api.Models.Transact.UserMealProfiling", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("DepartmentMealProfilingId");
+
+                    b.Property<string>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentMealProfilingId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserMealProfiling");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -312,6 +405,48 @@ namespace MealManager.Api.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("MealManager.Api.Models.Transact.DepartmentMealProfiling", b =>
+                {
+                    b.HasOne("MealManager.Api.Models.Lookup.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("MealManager.Api.Models.Lookup.MealAssignment", "MealAssignment")
+                        .WithMany()
+                        .HasForeignKey("MealAssignmentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("MealManager.Api.Models.Transact.MealTransaction", b =>
+                {
+                    b.HasOne("MealManager.Api.Models.Lookup.Menu", "Menu")
+                        .WithMany()
+                        .HasForeignKey("MenuId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("MealManager.Api.Models.Account.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.HasOne("MealManager.Api.Models.Transact.UserMealProfiling", "UserMealProfiling")
+                        .WithMany()
+                        .HasForeignKey("UserMealProfilingId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("MealManager.Api.Models.Transact.UserMealProfiling", b =>
+                {
+                    b.HasOne("MealManager.Api.Models.Transact.DepartmentMealProfiling", "DepartmentMealProfiling")
+                        .WithMany()
+                        .HasForeignKey("DepartmentMealProfilingId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("MealManager.Api.Models.Account.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

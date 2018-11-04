@@ -107,26 +107,29 @@ namespace MealManager.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateMealTransaction([FromBody] UserMealProfilingSaveModel model)
+        public async Task<IActionResult> CreateMealTransaction([FromBody] MealTransactionSaveModel model)
         {
             if (!ModelState.IsValid) return BadRequest();
 
+            //Todo: get the user mealprofile and check for today validity
             UserMealProfiling newProfile = await context.UserMealProfilings.FirstOrDefaultAsync(u => u.UserId == model.UserId);
+            
+            // check if user have exhausted the collection for the day
+            
+            var entity = mapper.Map<MealTransactionSaveModel, MealTransaction>(model);
+            entity.UserMealProfilingId = newProfile.Id;             
+            entity.CreatedOn = DateTime.Now;
 
-            if (newProfile != null) {
-                return StatusCode(400, "Profiling already exist");
-            }
-
-            var entity = mapper.Map<UserMealProfilingSaveModel, UserMealProfiling>(model);
-            context.UserMealProfilings.Add(entity);
+            context.MealTransactions.Add(entity);
             await context.SaveChangesAsync();
 
-            entity = await context.UserMealProfilings
+            entity = await context.MealTransactions
+                .Include(m => m.Menu)
+                .Include(d => d.UserMealProfiling)
                 .Include(u => u.User)
-                .Include(d => d.DepartmentMealProfiling)
                 .SingleOrDefaultAsync(it => it.Id == entity.Id);
 
-            var result = mapper.Map<UserMealProfiling, UserMealProfilingModel>(entity);
+            var result = mapper.Map<MealTransaction, MealTransactionModel>(entity);
             return Ok(result);
         }
 
