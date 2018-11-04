@@ -112,10 +112,33 @@ namespace MealManager.Api.Controllers
             if (!ModelState.IsValid) return BadRequest();
 
             //Todo: get the user mealprofile and check for today validity
-            UserMealProfiling newProfile = await context.UserMealProfilings.FirstOrDefaultAsync(u => u.UserId == model.UserId);
+            UserMealProfiling newProfile = await context.UserMealProfilings
+                .Include(d => d.DepartmentMealProfiling).ThenInclude(m => m.MealAssignment)
+                .FirstOrDefaultAsync(u => u.UserId == model.UserId);
             
             // check if user have exhausted the collection for the day
+            var startDateStr = "";
+            var endDateStr = "";
+
+            DateTime startDate = DateTime.Now;
+            DateTime endDate = DateTime.Now;
+
+            System.Globalization.CultureInfo ci = System.Globalization.CultureInfo.CreateSpecificCulture("en-GB");
+            startDateStr = Convert.ToDateTime(startDate, ci.DateTimeFormat).ToString("d");//short date pattern
+            endDateStr = Convert.ToDateTime(endDate, ci.DateTimeFormat).ToString("d");//short date pattern
+
+            var startTime = TimeSpan.Parse("00:00:00");
+            var endTime = TimeSpan.Parse("23:59:59");
+
+            DateTime todayStartDate = Convert.ToDateTime(startDateStr) + startTime;
+            DateTime todayEndDate = Convert.ToDateTime(endDateStr) + endTime;
+
+            var query = context.MealTransactions.Where(p => p.UserId == model.UserId && (p.CreatedOn >= todayStartDate && p.CreatedOn <= todayEndDate));
             
+            if (query.Count() > newProfile.DepartmentMealProfiling.MealAssignment.MealEntitled) {
+                StatusCode(400, "Meal Entitlment Exceeded");
+            }
+          
             var entity = mapper.Map<MealTransactionSaveModel, MealTransaction>(model);
             entity.UserMealProfilingId = newProfile.Id;             
             entity.CreatedOn = DateTime.Now;
