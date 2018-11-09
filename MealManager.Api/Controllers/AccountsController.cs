@@ -76,8 +76,6 @@ namespace MealManager.Api.Controllers
                 return StatusCode(400, addUserResult);
             }
 
-            //process department meal profiling
-            //DepartmentMealProfiling departProfile = context.DepartmentMealProfilings.SingleOrDefaultAsync( d => d.DepartmentId == model.DepartmentId);
             DepartmentMealProfiling departProfile = await context.DepartmentMealProfilings.Where( d => d.DepartmentId == model.DepartmentId).FirstOrDefaultAsync();
             
             var userProfiling = new UserMealProfiling() {
