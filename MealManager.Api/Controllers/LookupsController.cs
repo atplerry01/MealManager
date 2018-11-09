@@ -31,13 +31,14 @@ namespace MealManager.Api.Controllers
         }
 
         [HttpPost("Menus")]
-        public async Task<IActionResult> CreateNebu([FromBody] MenuSaveModel model)
+        public async Task<IActionResult> CreateMenu([FromBody] MenuSaveModel model)
         {
             if (!ModelState.IsValid) return BadRequest();
 
             Menu newProfile = await context.Menus.FirstOrDefaultAsync(u => u.Name == model.Name);
 
-            if (newProfile != null) {
+            if (newProfile != null)
+            {
                 return StatusCode(400, "Menu Already Exist");
             }
 
@@ -69,10 +70,25 @@ namespace MealManager.Api.Controllers
         {
             if (!ModelState.IsValid) return BadRequest();
 
-            DepartmentMealProfiling newProfile = await context.DepartmentMealProfilings.FirstOrDefaultAsync(u => u.DepartmentId == model.DepartmentId);
+            DepartmentMealProfiling existingEntity = await context.DepartmentMealProfilings.FirstOrDefaultAsync(u => u.DepartmentId == model.DepartmentId);
 
-            if (newProfile != null) {
-                return StatusCode(400, "Profiling already exist");
+            if (existingEntity != null)
+            {
+                // Update the Profile
+                var mealProfile = await context.DepartmentMealProfilings.SingleOrDefaultAsync(u => u.Id == existingEntity.Id);
+                mealProfile.MealAssignmentId = model.MealAssignmentId;
+                mealProfile.DepartmentId = model.DepartmentId;
+
+                context.Entry(mealProfile).State = EntityState.Modified;
+                await context.SaveChangesAsync();
+
+                var updateEntity = await context.DepartmentMealProfilings
+                   .Include(u => u.Department)
+                   .Include(d => d.MealAssignment)
+                   .SingleOrDefaultAsync(it => it.Id == mealProfile.Id);
+
+                var updateResult = mapper.Map<DepartmentMealProfiling, DepartmentMealProfilingModel>(updateEntity);
+                return Ok(updateResult);
             }
 
             var entity = mapper.Map<DepartmentMealProfilingSaveModel, DepartmentMealProfiling>(model);
@@ -87,6 +103,46 @@ namespace MealManager.Api.Controllers
             var result = mapper.Map<DepartmentMealProfiling, DepartmentMealProfilingModel>(entity);
             return Ok(result);
         }
+
+        // Department
+        [HttpGet("departments")]
+        public async Task<IEnumerable<DepartmentModel>> GetDepartments()
+        {
+            var entity = await context.Departments.ToListAsync();
+            return mapper.Map<IEnumerable<Department>, IEnumerable<DepartmentModel>>(entity);
+        }
+
+        [HttpPost("departments")]
+        public async Task<IActionResult> CreateDepartment([FromBody] DepartmentModel model)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            Department existingModel = await context.Departments.FirstOrDefaultAsync(u => u.Name == model.Name && u.JobFunction == model.JobFunction);
+
+            if (existingModel != null)
+            {
+                return StatusCode(400, "Department already exist");
+            }
+
+            var entity = mapper.Map<DepartmentModel, Department>(model);
+            context.Departments.Add(entity);
+            await context.SaveChangesAsync();
+
+            entity = await context.Departments.SingleOrDefaultAsync(it => it.Id == entity.Id);
+
+            var result = mapper.Map<Department, DepartmentModel>(entity);
+            return Ok(result);
+        }
+
+
+        [HttpGet("entitlements")]
+        public async Task<IEnumerable<MealAssignmentModel>> GetEntitlementss()
+        {
+            var entity = await context.MealAssignments.ToListAsync();
+            return mapper.Map<IEnumerable<MealAssignment>, IEnumerable<MealAssignmentModel>>(entity);
+        }
+
+
 
     }
 }

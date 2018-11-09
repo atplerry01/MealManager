@@ -37,9 +37,11 @@ namespace MealManager.Api.Persistence
 
         ///Lookups
         public DbSet<ClientUser> ClientUsers { get; set; }
-
-
+        public DbSet<Department> Departments { get; set; }
         public DbSet<Menu> Menus { get; set; }
+        public DbSet<MealAssignment> MealAssignments { get; set; }
+
+
         public DbSet<MealTransaction> MealTransactions { get; set; }
         public DbSet<DepartmentMealProfiling> DepartmentMealProfilings { get; set; }
         public DbSet<UserMealProfiling> UserMealProfilings { get; set; }

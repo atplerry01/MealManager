@@ -68,12 +68,18 @@ namespace MealManager.Api.Controllers
                 IsEnabled = true
             };
 
+            model.Password = "Me@lUs3r@01";
+
             IdentityResult addUserResult = await userManager.CreateAsync(user, model.Password);
 
             if (!addUserResult.Succeeded)
             {
                 return StatusCode(400, addUserResult);
             }
+
+            //process department meal profiling
+            var depart = context.Departments.FindAsync(model.DepartmentId);
+            var departProfile = context.DepartmentMealProfilings.Find()
 
             var result = mapper.Map<ApplicationUser, ApplicationUserModel>(user);
             return StatusCode(200, result);

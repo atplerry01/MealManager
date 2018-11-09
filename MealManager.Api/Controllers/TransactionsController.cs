@@ -99,7 +99,7 @@ namespace MealManager.Api.Controllers
             var entity = await context.MealTransactions
                 .Include(u => u.User)
                 .Include(m => m.Menu)
-                .Include(u => u.UserMealProfiling)
+                .Include(u => u.UserMealProfiling).ThenInclude(d => d.DepartmentMealProfiling).ThenInclude(dm => dm.Department)
                 .Where(p => p.CreatedOn >= start && p.CreatedOn <= end).ToListAsync();
 
             return mapper.Map<IEnumerable<MealTransaction>, IEnumerable<MealTransactionModel>>(entity);
