@@ -53,6 +53,36 @@ namespace MealManager.Api.Controllers
         }
 
 
+        [HttpGet("departments")]
+        public async Task<IEnumerable<DepartmentModel>> GetDepartments()
+        {
+            var entity = await context.Departments.ToListAsync();
+            return mapper.Map<IEnumerable<Department>, IEnumerable<DepartmentModel>>(entity);
+        }
+
+        [HttpPost("departments")]
+        public async Task<IActionResult> CreateDepartment([FromBody] DepartmentModel model)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            Department existingModel = await context.Departments.FirstOrDefaultAsync(u => u.Name == model.Name && u.JobFunction == model.JobFunction);
+
+            if (existingModel != null)
+            {
+                return StatusCode(400, "Department already exist");
+            }
+
+            var entity = mapper.Map<DepartmentModel, Department>(model);
+            context.Departments.Add(entity);
+            await context.SaveChangesAsync();
+
+            entity = await context.Departments.SingleOrDefaultAsync(it => it.Id == entity.Id);
+
+            var result = mapper.Map<Department, DepartmentModel>(entity);
+            return Ok(result);
+        }
+
+
 
         [HttpGet("department/profiling")]
         public async Task<IEnumerable<DepartmentMealProfilingModel>> GetDepartmentProfilings()
@@ -104,36 +134,7 @@ namespace MealManager.Api.Controllers
             return Ok(result);
         }
 
-        // Department
-        [HttpGet("departments")]
-        public async Task<IEnumerable<DepartmentModel>> GetDepartments()
-        {
-            var entity = await context.Departments.ToListAsync();
-            return mapper.Map<IEnumerable<Department>, IEnumerable<DepartmentModel>>(entity);
-        }
-
-        [HttpPost("departments")]
-        public async Task<IActionResult> CreateDepartment([FromBody] DepartmentModel model)
-        {
-            if (!ModelState.IsValid) return BadRequest();
-
-            Department existingModel = await context.Departments.FirstOrDefaultAsync(u => u.Name == model.Name && u.JobFunction == model.JobFunction);
-
-            if (existingModel != null)
-            {
-                return StatusCode(400, "Department already exist");
-            }
-
-            var entity = mapper.Map<DepartmentModel, Department>(model);
-            context.Departments.Add(entity);
-            await context.SaveChangesAsync();
-
-            entity = await context.Departments.SingleOrDefaultAsync(it => it.Id == entity.Id);
-
-            var result = mapper.Map<Department, DepartmentModel>(entity);
-            return Ok(result);
-        }
-
+        
 
         [HttpGet("entitlements")]
         public async Task<IEnumerable<MealAssignmentModel>> GetEntitlementss()

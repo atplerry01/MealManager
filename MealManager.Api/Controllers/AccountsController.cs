@@ -38,7 +38,6 @@ namespace MealManager.Api.Controllers
             this.roleManager = roleManager;
             this.context = context;
             this.mapper = mapper;
-
         }
 
         [HttpGet("Users")]
@@ -78,8 +77,16 @@ namespace MealManager.Api.Controllers
             }
 
             //process department meal profiling
-            var depart = context.Departments.FindAsync(model.DepartmentId);
-            var departProfile = context.DepartmentMealProfilings.Find()
+            //DepartmentMealProfiling departProfile = context.DepartmentMealProfilings.SingleOrDefaultAsync( d => d.DepartmentId == model.DepartmentId);
+            DepartmentMealProfiling departProfile = await context.DepartmentMealProfilings.Where( d => d.DepartmentId == model.DepartmentId).FirstOrDefaultAsync();
+            
+            var userProfiling = new UserMealProfiling() {
+                UserId = user.Id,
+                DepartmentMealProfilingId = departProfile.Id
+            };
+
+            context.UserMealProfilings.Add(userProfiling);
+            await context.SaveChangesAsync();
 
             var result = mapper.Map<ApplicationUser, ApplicationUserModel>(user);
             return StatusCode(200, result);
